@@ -4,6 +4,7 @@ package xyz.hrhrng.yodo;
 import xyz.hrhrng.yodo.common.SimpleLoadingCache;
 import xyz.hrhrng.yodo.helper.ExtensionLoaderHelper;
 
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -194,7 +195,7 @@ public class ExtensionLoader<T> {
         return null;
     }
 
-    private static ClassLoader findClassLoader() {
+    static ClassLoader findClassLoader() {
 //
 //        return ClassUtils.getClassLoader(ExtensionLoader.class);
         return null;
@@ -216,21 +217,36 @@ public class ExtensionLoader<T> {
 
         Map<String, Class<? extends T>> extensionClasses = new HashMap<>();
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
+        final Strategy annoStrategy = type.getAnnotation(Strategy.class);
         // 指定 strategy
-        if(defaultAnnotation.strategy() != null){
-            LoadingStrategy strategy = ExtensionLoaderHelper.loadingStrategyCache.get(defaultAnnotation.strategy());
-            loadDirectory(extensionClasses, strategy.directory(), type.getName(), strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
+        if(defaultAnnotation.strategy() != null || annoStrategy != null){
+            if (defaultAnnotation.strategy() != null) {
+                for (String s : defaultAnnotation.strategy()){
+
+                }
+                LoadingStrategy strategy = ExtensionLoaderHelper.loadingStrategyCache.get(defaultAnnotation.strategy());
+                loadDirectory0(extensionClasses, type.getName(), strategy);
+            }
+            if (annoStrategy != null) {
+
+            }
         }
         else {
             for (LoadingStrategy strategy : ExtensionLoaderHelper.strategies) {
-                loadDirectory(extensionClasses, strategy.directory(), type.getName(), strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
+                loadDirectory0(extensionClasses, type.getName(), strategy);
             }
         }
         return extensionClasses;
     }
+    void loadDirectory0(Map<String, Class<? extends T>> extensionClasses, String type, LoadingStrategy strategy) {
+        loadDirectory(extensionClasses, strategy.directory(), type, strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
+    }
 
     // 根据测量器来
     // todo dubbo 没有用到的字段能否在注解中提供，策略可不可以在注解中指定？
+    // 获取 SPI 定义的 默认扩展名
+    // TODO 默认的扩展名可不可以在 meta 文件中 定义
+
     void loadDirectory(Map<String, Class<? extends T>> extensionClasses, String dir, String type,
                        boolean extensionLoaderClassLoaderFirst, boolean overridden, String... excludedPackages) {
         String fileName = dir + type;
@@ -257,7 +273,7 @@ public class ExtensionLoader<T> {
             if (urls != null) {
                 while (urls.hasMoreElements()) {
                     java.net.URL resourceURL = urls.nextElement();
-//                    loadResource(extensionClasses, classLoader, resourceURL, overridden, excludedPackages);
+                    loadResource(extensionClasses, classLoader, resourceURL, overridden, excludedPackages);
                 }
             }
         } catch (Throwable t) {
@@ -266,8 +282,10 @@ public class ExtensionLoader<T> {
         }
     }
 
-    // 获取 SPI 定义的 默认扩展名
-    // TODO 默认的扩展名可不可以在 meta 文件中 定义
+    private void loadResource(Map<String, Class<? extends T>> extensionClasses, ClassLoader classLoader, URL resourceURL, boolean overridden, String[] excludedPackages) {
+
+    }
+
     private void cacheDefaultExtensionName() {
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
         // TODO pin
@@ -295,34 +313,4 @@ public class ExtensionLoader<T> {
 
 
     // for init loading strategy, 逻辑稍有不同
-    public static class LoadingStrategyExtensionLoader extends ExtensionLoader {
-        public LoadingStrategyExtensionLoader(Class type) {
-            super(type);
-        }
-
-        private Map<String, Class<? extends LoadingStrategy>> loadExtensionClasses()  {
-            Map<String, Class<? extends LoadingStrategy>> extensionClasses = new HashMap<>();
-            SPI defaultAnnotation = (SPI) type.getAnnotation(SPI.class);
-            Class defaultStrategy = null;
-            try {
-                defaultStrategy = findClassLoader().loadClass(defaultAnnotation.strategy());
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            LoadingStrategy strategy = null;
-            try {
-                strategy = (LoadingStrategy) defaultStrategy.newInstance();
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-            loadDirectory(extensionClasses, strategy.directory(), type.getName(), strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
-            return (Map<String, Class<? extends LoadingStrategy>>) extensionClasses;
-        }
-
-        public Map<String, Class<? extends LoadingStrategy>> getStrategyMap() {
-            return (Map<String, Class<? extends LoadingStrategy>>) cachedClasses.get();
-        }
-    }
 }

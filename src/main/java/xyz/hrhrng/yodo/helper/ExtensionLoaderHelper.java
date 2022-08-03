@@ -2,6 +2,7 @@ package xyz.hrhrng.yodo.helper;
 
 import xyz.hrhrng.yodo.ExtensionLoader;
 import xyz.hrhrng.yodo.LoadingStrategy;
+import xyz.hrhrng.yodo.LoadingStrategyExtensionLoader;
 import xyz.hrhrng.yodo.SPI;
 import xyz.hrhrng.yodo.common.SimpleLoadingCache;
 import java.util.Map;
@@ -26,8 +27,8 @@ public class ExtensionLoaderHelper {
         // 先用InitialLoadingStrategy初始化自定义的所有的加载器
         LoadingStrategy initial = new LoadingStrategy.InitialLoadingStrategy();
         // ExtensionLoader
-        ExtensionLoader.LoadingStrategyExtensionLoader extensionLoader =
-                new ExtensionLoader.LoadingStrategyExtensionLoader(LoadingStrategy.class);
+        LoadingStrategyExtensionLoader extensionLoader =
+                new LoadingStrategyExtensionLoader(LoadingStrategy.class);
         //                                    META-INFO/yodo/xyz.hrhrng.yodo.LoadingStrategy
 
         Map<String, Class<?>> loadingStrategyCache1 = (Map<String, Class<?>>) extensionLoader.getStrategyMap();
