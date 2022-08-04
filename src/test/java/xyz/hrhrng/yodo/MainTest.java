@@ -2,20 +2,26 @@ package xyz.hrhrng.yodo;
 
 import org.junit.Test;
 import xyz.hrhrng.yodo.helper.ExtensionLoaderHelper;
-
-import java.awt.*;
+import xyz.hrhrng.yodo.testclass.Robot;
 
 public class MainTest {
 
     @Test
     public void test1 () {
-        ExtensionLoader<Robot> extensionLoader =
+        ExtensionLoader<xyz.hrhrng.yodo.testclass.Robot> extensionLoader =
                 ExtensionLoaderHelper.getExtensionLoader(Robot.class);
     }
     @Test
     public void test2 () {
 
         System.out.println(this.getClass().getName());
+    }
+
+    @Test
+    public void test3 () {
+        ExtensionLoader<Robot> extensionLoader =
+                ExtensionLoaderHelper.getExtensionLoader(Robot.class);
+        Robot optimusPrime = extensionLoader.getExtension("optimusPrime");
     }
 
 }

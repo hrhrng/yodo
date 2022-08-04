@@ -1,0 +1,1 @@
+optimusPrime = org.example.spitest.OptimusPrime

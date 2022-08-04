@@ -3,7 +3,7 @@ package xyz.hrhrng.yodo.factory;
 
 
 
-import xyz.hrhrng.yodo.Adaptive;
+import xyz.hrhrng.yodo.annotation.Adaptive;
 import xyz.hrhrng.yodo.ExtensionFactory;
 import xyz.hrhrng.yodo.ExtensionLoader;
 

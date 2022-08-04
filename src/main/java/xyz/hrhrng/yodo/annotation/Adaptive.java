@@ -1,4 +1,7 @@
-package xyz.hrhrng.yodo;
+package xyz.hrhrng.yodo.annotation;
+
+import xyz.hrhrng.yodo.ExtensionLoader;
+import xyz.hrhrng.yodo.annotation.SPI;
 
 import java.lang.annotation.*;
 

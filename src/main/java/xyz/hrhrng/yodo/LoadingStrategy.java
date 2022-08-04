@@ -1,6 +1,7 @@
 package xyz.hrhrng.yodo;
 
 
+import xyz.hrhrng.yodo.annotation.SPI;
 import xyz.hrhrng.yodo.common.Prioritized;
 
 // todo 是否可以简化策略的内容
@@ -17,17 +18,16 @@ public interface LoadingStrategy extends Prioritized {
         return null;
     }
 
-    /**
-     * Indicates current {@link LoadingStrategy} supports overriding other lower prioritized instances or not.
-     *
-     * @return if supports, return <code>true</code>, or <code>false</code>
-     * @since 2.7.7
-     */
     default boolean overridden() {
         return false;
     }
-    // 用此策略来加载自定义的其他 LoadingStrategy
-    class InitialLoadingStrategy implements LoadingStrategy{
+
+    /**
+     * defaultLoadingStrategy 的作用：
+     *  1.作为默认的 LoadingStrategy
+     *  2.用户的自定义的 LoadingStrategy 必须定义在此
+     */
+    class defaultLoadingStrategy implements LoadingStrategy{
         @Override
         public String directory() {
             return "META-INF/yodo";

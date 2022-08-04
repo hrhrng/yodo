@@ -3,7 +3,7 @@ package xyz.hrhrng.yodo.helper;
 import xyz.hrhrng.yodo.ExtensionLoader;
 import xyz.hrhrng.yodo.LoadingStrategy;
 import xyz.hrhrng.yodo.LoadingStrategyExtensionLoader;
-import xyz.hrhrng.yodo.SPI;
+import xyz.hrhrng.yodo.annotation.SPI;
 import xyz.hrhrng.yodo.common.SimpleLoadingCache;
 import java.util.Map;
 
@@ -14,6 +14,7 @@ public class ExtensionLoaderHelper {
 
     // 策略作为公共的模块
     // TODO why volatile
+    // volatile 防止指令重排
     public static volatile LoadingStrategy[] strategies = loadLoadingStrategies();
     // 为了指定某个策略
     public static volatile Map<String, LoadingStrategy> loadingStrategyCache;
@@ -24,13 +25,12 @@ public class ExtensionLoaderHelper {
 
     // JDK SPI 机制获取策略器
     private static LoadingStrategy[] loadLoadingStrategies() {
-        // 先用InitialLoadingStrategy初始化自定义的所有的加载器
-        LoadingStrategy initial = new LoadingStrategy.InitialLoadingStrategy();
-        // ExtensionLoader
+
+        LoadingStrategy initial = new LoadingStrategy.defaultLoadingStrategy();
+
         LoadingStrategyExtensionLoader extensionLoader =
                 new LoadingStrategyExtensionLoader(LoadingStrategy.class);
-        //                                    META-INFO/yodo/xyz.hrhrng.yodo.LoadingStrategy
-
+        // META-INFO/yodo/xyz.hrhrng.yodo.LoadingStrategy
         Map<String, Class<?>> loadingStrategyCache1 = (Map<String, Class<?>>) extensionLoader.getStrategyMap();
         loadingStrategyCache1.entrySet().stream().map(i->{
             try {
@@ -44,18 +44,16 @@ public class ExtensionLoaderHelper {
     }
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+
         if (type == null) {
             throw new IllegalArgumentException("Extension type == null");
         }
+
         if (!type.isAnnotationPresent(SPI.class)) {
             throw new IllegalArgumentException("Extension type (" + type +
                     ") is not an extension, because it is NOT annotated with @" + SPI.class.getSimpleName() + "!");
         }
 
-        ExtensionLoader<T> loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
-        if (loader == null) {
-            loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type, ExtensionLoader<T>::new);
-        }
-        return loader;
+        return (ExtensionLoader<T>) EXTENSION_LOADERS.get(type, ExtensionLoader<T>::new);
     }
 }

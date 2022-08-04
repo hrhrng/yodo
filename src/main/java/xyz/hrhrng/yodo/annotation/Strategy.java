@@ -1,4 +1,4 @@
-package xyz.hrhrng.yodo;
+package xyz.hrhrng.yodo.annotation;
 
 import java.lang.annotation.*;
 
