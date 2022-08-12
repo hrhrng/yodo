@@ -1,5 +1,7 @@
 package xyz.hrhrng.yodo.annotation;
 
+import xyz.hrhrng.yodo.LoadingStrategy;
+
 import java.lang.annotation.*;
 
 @Documented
@@ -7,5 +9,10 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 public @interface Strategy {
     String directory();
-    String[] excludedPackages();
+    String[] excludedPackages() default {};
+
+    boolean preferExtensionClassLoader() default false;
+
+    boolean overridden() default false;
+
 }

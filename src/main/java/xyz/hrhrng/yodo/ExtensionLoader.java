@@ -15,8 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
-import static java.util.ServiceLoader.load;
-import static java.util.stream.StreamSupport.stream;
 
 public class ExtensionLoader<T> {
 
@@ -49,7 +47,8 @@ public class ExtensionLoader<T> {
         this.type = type;
         // 利用本身的机制来加载ExtensionFactory类
         // todo ExtensionFactory
-        objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoaderHelper.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
+//        objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoaderHelper.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
+        objectFactory = null;
     }
 
     public static ExtensionLoader<ExtensionFactory> getExtensionLoader(Class<ExtensionFactory> extensionFactoryClass) {
@@ -182,10 +181,29 @@ public class ExtensionLoader<T> {
     }
 
     // todo findClass
-    static ClassLoader findClassLoader() {
-//
-//        return ClassUtils.getClassLoader(ExtensionLoader.class);
-        return null;
+    private ClassLoader findClassLoader() {
+
+        Class clazz = type;
+        ClassLoader cl = null;
+        try {
+            cl = Thread.currentThread().getContextClassLoader();
+        } catch (Throwable ex) {
+            // Cannot access thread context ClassLoader - falling back to system class loader...
+        }
+        if (cl == null) {
+            // No thread context class loader -> use class loader of this class.
+            cl = clazz.getClassLoader();
+            if (cl == null) {
+                // getClassLoader() returning null indicates the bootstrap ClassLoader
+                try {
+                    cl = ClassLoader.getSystemClassLoader();
+                } catch (Throwable ex) {
+                    // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+                }
+            }
+        }
+
+        return cl;
     }
 
     private Map<String, Class<? extends T>> getExtensionClasses() {
@@ -206,16 +224,16 @@ public class ExtensionLoader<T> {
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
         final Strategy annoStrategy = type.getAnnotation(Strategy.class);
         // 指定 strategy
-        if(defaultAnnotation.strategy() != null || annoStrategy != null){
-            if (defaultAnnotation.strategy() != null) {
+        if(defaultAnnotation.strategy().length != 0 || annoStrategy != null){
+            if (defaultAnnotation.strategy().length != 0) {
                 for (String s : defaultAnnotation.strategy()){
-
+                    LoadingStrategy strategy = ExtensionLoaderHelper.loadingStrategyCache.get(defaultAnnotation.strategy());
+                    loadDirectory0(extensionClasses, type.getName(), strategy);
                 }
-                LoadingStrategy strategy = ExtensionLoaderHelper.loadingStrategyCache.get(defaultAnnotation.strategy());
-                loadDirectory0(extensionClasses, type.getName(), strategy);
             }
             if (annoStrategy != null) {
-
+                loadDirectory(extensionClasses, annoStrategy.directory(), type.getName(),
+                        annoStrategy.preferExtensionClassLoader(), annoStrategy.overridden(), annoStrategy.excludedPackages());
             }
         }
         else {

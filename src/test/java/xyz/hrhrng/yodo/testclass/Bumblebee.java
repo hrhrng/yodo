@@ -4,7 +4,7 @@ public class Bumblebee implements Robot {
 
 
     @Override
-    public void hello() {
-        System.out.println("I am Bumblebee!");
+    public String hello() {
+        return "I am Bumblebee!";
     }
 }

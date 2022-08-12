@@ -5,7 +5,7 @@ import xyz.hrhrng.yodo.annotation.SPI;
 import xyz.hrhrng.yodo.common.Prioritized;
 
 // todo 是否可以简化策略的内容
-@SPI(strategy = "xyz.hrhrng.yodo.Prioritized.InitialLoadingStrategy")
+@SPI(strategy = "xyz.hrhrng.yodo.LoadingStrategy.defaultLoadingStrategy")
 public interface LoadingStrategy extends Prioritized {
 
     String directory();
@@ -30,7 +30,7 @@ public interface LoadingStrategy extends Prioritized {
     class defaultLoadingStrategy implements LoadingStrategy{
         @Override
         public String directory() {
-            return "META-INF/yodo";
+            return "yodo/";
         }
 
     }
